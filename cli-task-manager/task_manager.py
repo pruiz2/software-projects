@@ -4,6 +4,8 @@ Author: Pablo Ruiz
 Purpose: The following program allows the user to create, manage, and complete tasks.
 '''
 
+import os
+
 # Global state shared across all functions.
 # tasks_dict mirrors what's in tasks.txt, keyed by task number, for fast in-memory lookups.
 # task_number tracks the NEXT number to assign to a newly created task.
@@ -114,29 +116,31 @@ def build_dict():
     # Runs once, at program startup, to rebuild tasks_dict and task_number
     # from whatever is currently saved in tasks.txt — since the program
     # has no memory between runs except what's written to the file.
-    with open("tasks.txt", "r") as f:
-        lines = f.readlines()
+    
+    if os.path.exists("tasks.txt"):
+        with open("tasks.txt", "r") as f:
+            lines = f.readlines()
 
-        for line in lines:
-            global tasks_dict
-            global task_number
+            for line in lines:
+                global tasks_dict
+                global task_number
 
-            line = line.strip("\n").split(".")
-            task_number = int(line[0])
-            tasks_dict[task_number] = line[1]
+                line = line.strip("\n").split(".")
+                task_number = int(line[0])
+                tasks_dict[task_number] = line[1]
 
-        # After scanning every line, figure out what the NEXT task number
-        # should be. We deliberately use max() over ALL dict keys (not just
-        # the last line read) because deletions can leave gaps or leave the
-        # highest-numbered task anywhere in the file — max() finds the true
-        # ceiling regardless of order or missing numbers.
-        if len(tasks_dict) == 0:
-            # No tasks exist yet (fresh/empty file) — start numbering at 1.
-            task_number = 1
-        else:
-            # Highest existing task number, plus one, avoids ever reusing
-            # a number that's already in use.
-            task_number = max(tasks_dict.keys()) + 1
+            # After scanning every line, figure out what the NEXT task number
+            # should be. We deliberately use max() over ALL dict keys (not just
+            # the last line read) because deletions can leave gaps or leave the
+            # highest-numbered task anywhere in the file — max() finds the true
+            # ceiling regardless of order or missing numbers.
+    if len(tasks_dict) == 0:
+        # No tasks exist yet (fresh/empty file) — start numbering at 1.
+        task_number = 1
+    else:
+        # Highest existing task number, plus one, avoids ever reusing
+        # a number that's already in use.
+        task_number = max(tasks_dict.keys()) + 1
 
 
 def main():
